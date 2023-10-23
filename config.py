@@ -19,3 +19,5 @@ SEARCH_ENGINE = "https://google.com/search?q={}"
 DATASET_INFO = "https://www.kaggle.com/datasets/daniilonishchenko/mushrooms-images-classification-215/code"
 
 REPOSITORY_LINK = "https://github.com/englishtea21/mushroom-picker-bot"
+
+""
