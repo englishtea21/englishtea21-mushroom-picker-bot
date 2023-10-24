@@ -1,6 +1,14 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 import text
 
+'''
+Using keyboards
+'''
+
+
+'''
+start keyboard with options
+'''
 START_INSTRUCTIONS = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text=text.PHOTO_REQUIREMENTS_QUESTION)],

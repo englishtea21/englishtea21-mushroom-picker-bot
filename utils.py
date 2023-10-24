@@ -21,8 +21,16 @@ from urllib.parse import quote_plus, quote
 
 load_dotenv()
 
+"""
+used utils
+"""
+
 
 class NNProcessor:
+    """
+    Neural network predict class
+    """
+
     _TRAIN_RESCALE_SIZE = 640
     # к этому размеру мы приводим картинки train'а
     # для дальнейшего рандомного обрезания под размер RESCALE_SIZE для аугментации данных
@@ -45,27 +53,39 @@ class NNProcessor:
         )
 
     def predict(self, img: Image):
+        """
+        model predict method
+        """
+
+        """
+        convert input img to conventional format
+        """
         jpg_image = img.convert("RGB")
+        """
+        make central cropping and preprocessing conventional to neural network
+        """
         jpg_image = transforms.Compose(
             [transforms.ToTensor(), transforms.CenterCrop(max(jpg_image.size))]
         )(jpg_image)
         jpg_image = self.photo_transformations(jpg_image)
-        jpg_image = jpg_image.unsqueeze(
-            0
-        )  # Добавление размерности пакета (batch dimension)
+        jpg_image = jpg_image.unsqueeze(0)  # batch dimension adding
 
-        # Передача изображения через модель для получения предсказания
+        # get nn outputs
         with torch.no_grad():
             output = self.nn_model(jpg_image)
 
-        # Обработка предсказания
+        # get top 3 of predictions
         top_predicted_classes = torch.topk(output.flatten(), 3).indices
 
-        # Вывод результата предсказания
+        # decoding predictions
         return self.label_encoder.inverse_transform(top_predicted_classes)
 
 
 class ResultComposer:
+    """
+    Result text message composer
+    """
+
     def __init__(self):
         pass
 
@@ -93,19 +113,24 @@ class ResultComposer:
         return text.RESULT_TEMPLATE + bullet_list
 
     async def _compose_article_answer(self, mushroom):
+        """
+        get query link on platform
+        """
+
         article = await self._brief_on_platform(mushroom)
 
         answer = (
             text.FIRST_ARTICLE.format(article)
             if article is not None
-            else text.NO_ARTICLES.format(
-                config.SEARCH_ENGINE.format(quote_plus(mushroom))
-            )
+            else text.NOT_FOUND
         )
 
         return answer
 
     async def _brief_on_platform(self, mushroom):
+        """
+        get 1st link among searched on platform
+        """
         async with aiohttp.ClientSession(trust_env=True) as session:
             async with session.get(
                 config.PLATFORM_SEARCH.format(quote_plus(mushroom))
@@ -113,7 +138,10 @@ class ResultComposer:
                 body = await resp.text()
                 soup = BeautifulSoup(body, "html.parser")
 
-                top_link = soup.select_one("span.taxon a").attrs["href"]
+                try:
+                    top_link = soup.select_one("span.taxon a").attrs["href"]
+                except AttributeError:
+                    top_link = None
 
                 return (
                     config.PLATFORM_WEBSCRAPPING + "/" + top_link

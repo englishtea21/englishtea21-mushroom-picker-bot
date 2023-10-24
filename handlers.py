@@ -26,25 +26,22 @@ async def start_handler(msg: Message):
 async def scanning_results(message: types.Message, bot: Bot):
     photo = message.photo[-1]
     file_id = photo.file_id
-    # file = await bot.get_file(file_id)
     disk_file_path = f"{config.DATA_DIR}/{file_id}.jpg"
-    # await bot.download(file.file_path, destination=disk_file_path)
 
     if not os.path.exists(config.DATA_DIR):
         os.mkdir(config.DATA_DIR)
 
     await bot.download(photo, destination=disk_file_path)
 
-    # Загрузка и обработка изображения
+    # img donwloading
     image = Image.open(disk_file_path)
-    # print(type(image))
 
-    # предсказание модели
+    # model predictions
     prediction = nn_processor.predict(image)
 
     shutil.rmtree(config.DATA_DIR)
 
-    # Отправка результата пользователю
+    # img "in process message"
     await message.answer(text.PHOTO_PROCESSING)
     # await message.reply_photo(message.photo[-1].file_id)
     await bot.send_message(
