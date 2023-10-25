@@ -1,6 +1,6 @@
 MODEL_AND_PREPROCESSING_DIR = "model_and_preprocessing"
 
-DATA_DIR = "photos_of_mushrooms"
+# INPUT_FILE_NAME = "photos_of_mushrooms"
 
 PATH_TO_MODEL = (
     MODEL_AND_PREPROCESSING_DIR

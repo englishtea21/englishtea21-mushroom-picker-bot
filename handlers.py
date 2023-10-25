@@ -6,6 +6,7 @@ import kb
 import config
 from aiogram import Bot, types
 from PIL import Image
+import tempfile
 import os, shutil
 from utils import nn_processor, result_composer
 import json
@@ -26,24 +27,20 @@ async def start_handler(msg: Message):
 async def scanning_results(message: types.Message, bot: Bot):
     photo = message.photo[-1]
     file_id = photo.file_id
-    disk_file_path = f"{config.DATA_DIR}/{file_id}.jpg"
+    
+    tmp_photo_file = tempfile.TemporaryFile()
 
-    if not os.path.exists(config.DATA_DIR):
-        os.mkdir(config.DATA_DIR)
-
-    await bot.download(photo, destination=disk_file_path)
+    await bot.download(photo, destination=tmp_photo_file)
 
     # img donwloading
-    image = Image.open(disk_file_path)
+    image = Image.open(tmp_photo_file)
 
     # model predictions
     prediction = nn_processor.predict(image)
 
-    shutil.rmtree(config.DATA_DIR)
-
     # img "in process message"
     await message.answer(text.PHOTO_PROCESSING)
-    # await message.reply_photo(message.photo[-1].file_id)
+    
     await bot.send_message(
         text=await result_composer.compose_result(prediction),
         chat_id=message.chat.id,
