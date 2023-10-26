@@ -13,7 +13,7 @@ import aiohttp
 from os import getenv
 from dotenv import load_dotenv
 
-from text import text_templates
+import text
 import re
 from urllib.parse import quote_plus, quote
 
@@ -93,12 +93,12 @@ class ResultComposer:
         )
 
         items = [
-            text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_BULLET_LI"].format(
+            text.text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_BULLET_LI"].format(
                 *(
-                    text_templates["RESULT_MESSAGE_TEMPLATES"]["LINK_TEMPLATE"].format(
-                        getenv("SEARCH_ENGINE").format(quote(mushroom)), mushroom
-                    ),
-                    text_templates["RESULT_MESSAGE_TEMPLATES"][
+                    text.text_templates["RESULT_MESSAGE_TEMPLATES"][
+                        "LINK_TEMPLATE"
+                    ].format(getenv("SEARCH_ENGINE").format(quote(mushroom)), mushroom),
+                    text.text_templates["RESULT_MESSAGE_TEMPLATES"][
                         "PLATFORM_SEARCH_TEMPLATE"
                     ].format(getenv("PLATFORM_SEARCH").format(quote(mushroom))),
                 )
@@ -109,7 +109,8 @@ class ResultComposer:
 
         bullet_list = "\n\n".join([f"{i+1}. {item}" for i, item in enumerate(items)])
         return (
-            text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_TEMPLATE"] + bullet_list
+            text.text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_TEMPLATE"]
+            + bullet_list
         )
 
     async def _compose_article_answer(self, mushroom):
@@ -120,9 +121,11 @@ class ResultComposer:
         article = await self._brief_on_platform(mushroom)
 
         answer = (
-            text_templates["RESULT_MESSAGE_TEMPLATES"]["FIRST_ARTICLE"].format(article)
+            text.text_templates["RESULT_MESSAGE_TEMPLATES"]["FIRST_ARTICLE"].format(
+                article
+            )
             if article is not None
-            else text_templates["RESULT_MESSAGE_TEMPLATES"]["NOT_FOUND"]
+            else text.text_templates["RESULT_MESSAGE_TEMPLATES"]["NOT_FOUND"]
         )
 
         return answer
