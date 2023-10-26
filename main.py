@@ -4,7 +4,6 @@ import logging
 from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
-import config
 from utils import bot
 from handlers import router
 
@@ -12,7 +11,7 @@ from handlers import router
 async def main():
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(router)
-    
+
     """
     удаляет все обновления, которые произошли после последнего завершения работы бота. 
     Это нужно, чтобы бот обрабатывал только те сообщения, которые пришли ему непосредственно во время его работы, 

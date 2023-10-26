@@ -5,17 +5,15 @@ import pickle
 from bs4 import BeautifulSoup
 from PIL import Image
 
-import config
-
 from aiogram import Bot
 from aiogram.enums.parse_mode import ParseMode
 
 import aiohttp
 
-import os
+from os import getenv
 from dotenv import load_dotenv
 
-import text
+from text import text_templates
 import re
 from urllib.parse import quote_plus, quote
 
@@ -95,14 +93,14 @@ class ResultComposer:
         )
 
         items = [
-            text.RESULT_BULLET_LI.format(
+            text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_BULLET_LI"].format(
                 *(
-                    text.LINK_TEMPLATE.format(
-                        config.SEARCH_ENGINE.format(quote(mushroom)), mushroom
+                    text_templates["RESULT_MESSAGE_TEMPLATES"]["LINK_TEMPLATE"].format(
+                        getenv("SEARCH_ENGINE").format(quote(mushroom)), mushroom
                     ),
-                    text.PLATFORM_SEARCH_TEMPLATE.format(
-                        config.PLATFORM_SEARCH.format(quote(mushroom))
-                    ),
+                    text_templates["RESULT_MESSAGE_TEMPLATES"][
+                        "PLATFORM_SEARCH_TEMPLATE"
+                    ].format(getenv("PLATFORM_SEARCH").format(quote(mushroom))),
                 )
             )
             + await self._compose_article_answer(mushroom)
@@ -110,7 +108,9 @@ class ResultComposer:
         ]
 
         bullet_list = "\n\n".join([f"{i+1}. {item}" for i, item in enumerate(items)])
-        return text.RESULT_TEMPLATE + bullet_list
+        return (
+            text_templates["RESULT_MESSAGE_TEMPLATES"]["RESULT_TEMPLATE"] + bullet_list
+        )
 
     async def _compose_article_answer(self, mushroom):
         """
@@ -120,9 +120,9 @@ class ResultComposer:
         article = await self._brief_on_platform(mushroom)
 
         answer = (
-            text.FIRST_ARTICLE.format(article)
+            text_templates["RESULT_MESSAGE_TEMPLATES"]["FIRST_ARTICLE"].format(article)
             if article is not None
-            else text.NOT_FOUND
+            else text_templates["RESULT_MESSAGE_TEMPLATES"]["NOT_FOUND"]
         )
 
         return answer
@@ -133,7 +133,7 @@ class ResultComposer:
         """
         async with aiohttp.ClientSession(trust_env=True) as session:
             async with session.get(
-                config.PLATFORM_SEARCH.format(quote_plus(mushroom))
+                getenv("PLATFORM_SEARCH").format(quote_plus(mushroom))
             ) as resp:
                 body = await resp.text()
                 soup = BeautifulSoup(body, "html.parser")
@@ -144,14 +144,14 @@ class ResultComposer:
                     top_link = None
 
                 return (
-                    config.PLATFORM_WEBSCRAPPING + "/" + top_link
+                    getenv("PLATFORM_WEBSCRAPPING") + "/" + top_link
                     if top_link is not None
                     else None
                 )
 
 
-nn_processor = NNProcessor(config.PATH_TO_MODEL, config.PATH_TO_ENCODER)
+nn_processor = NNProcessor(getenv("PATH_TO_MODEL"), getenv("PATH_TO_ENCODER"))
 
 result_composer = ResultComposer()
 
-bot = Bot(token=os.getenv("BOT_TOKEN"), parse_mode=ParseMode.HTML)
+bot = Bot(token=getenv("BOT_TOKEN"), parse_mode=ParseMode.HTML)
